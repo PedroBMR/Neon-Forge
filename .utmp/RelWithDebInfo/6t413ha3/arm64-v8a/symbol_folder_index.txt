@@ -1,0 +1,1 @@
+C:\Users\monte\OneDrive\Desktop\Pedro Luiz\Neon-Forge\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\build\intermediates\cxx\RelWithDebInfo\6t413ha3\obj\arm64-v8a
