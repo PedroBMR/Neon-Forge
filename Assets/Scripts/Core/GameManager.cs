@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Refs")]
     public ForgeItem forgeItem;
+    public WeaponDatabase weaponDatabase;
 
     [Header("Progressão")]
     public int level = 1;
@@ -76,9 +77,20 @@ public class GameManager : MonoBehaviour
 
     void SetupLevel()
     {
-        double hp = baseForgeHP * System.Math.Pow(hpGrowth, level - 1);
+        WeaponSpec spec = null;
+        if (weaponDatabase != null && weaponDatabase.weaponSpecs != null && weaponDatabase.weaponSpecs.Length > 0)
+        {
+            int index = Mathf.Clamp(level - 1, 0, weaponDatabase.weaponSpecs.Length - 1);
+            spec = weaponDatabase.weaponSpecs[index];
+        }
+        else
+        {
+            spec = ScriptableObject.CreateInstance<WeaponSpec>();
+            spec.hp = baseForgeHP * System.Math.Pow(hpGrowth, level - 1);
+            spec.time = 0f;
+        }
         bool legendary = (level % 10 == 0);
-        forgeItem.Setup(hp, legendary);
+        forgeItem.Setup(spec, legendary);
 
         UIController.I?.UpdateLevel(level, legendary);           // <-- add
         UIController.I?.UpdateTapDps(tapPower, dps);             // <-- add (opcional)
