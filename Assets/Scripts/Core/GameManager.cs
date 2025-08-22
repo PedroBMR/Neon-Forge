@@ -31,7 +31,9 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         Application.targetFrameRate = 60;
+        SaveSystem.Load();
         SetupLevel();
+        UIController.I?.UpdateCredits(credits);
     }
 
     void Update()
@@ -50,6 +52,7 @@ public class GameManager : MonoBehaviour
         {
             AwardReward();      // <-- ADICIONADO
             level++;
+            SaveSystem.Save();
             SetupLevel();
         }
     }
