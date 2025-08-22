@@ -5,6 +5,7 @@ public class UIController : MonoBehaviour
 {
     public static UIController I;
     public TextMeshProUGUI levelTxt, creditsTxt, tapDpsTxt;
+    public FloatingText floatingTextPrefab;
 
     void Awake() => I = this;
 
@@ -14,4 +15,11 @@ public class UIController : MonoBehaviour
     }
     public void UpdateCredits(double cr) { if (creditsTxt) creditsTxt.text = $"{cr:0}"; }
     public void UpdateTapDps(double tap, double dps) { if (tapDpsTxt) tapDpsTxt.text = $"TAP {tap:0} | DPS {dps:0.##}"; }
+
+    public void SpawnFloatingText(string message, Vector3 position, Color? color = null)
+    {
+        if (floatingTextPrefab == null) return;
+        var ft = Instantiate(floatingTextPrefab, transform);
+        ft.Show(message, position, color);
+    }
 }
