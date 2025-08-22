@@ -10,6 +10,7 @@ public static class SaveSystem
         {
             level = GameManager.I.level,
             credits = GameManager.I.credits,
+            manaEssence = GameManager.I.manaEssence,
             tapPower = GameManager.I.tapPower,
             dps = GameManager.I.dps
         };
@@ -28,6 +29,7 @@ public static class SaveSystem
 
         GameManager.I.level = data.level;
         GameManager.I.credits = data.credits;
+        GameManager.I.manaEssence = data.manaEssence;
         GameManager.I.tapPower = data.tapPower;
         GameManager.I.dps = data.dps;
     }
