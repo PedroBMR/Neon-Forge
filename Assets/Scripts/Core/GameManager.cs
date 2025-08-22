@@ -48,6 +48,7 @@ public class GameManager : MonoBehaviour
     {
         if (forgeItem == null) return;
         forgeItem.ApplyProgress(tapPower);
+        UIController.I?.SpawnFloatingText($"-{tapPower:0}", forgeItem.transform.position, Color.red);
         if (!forgeItem.IsInProgress)
         {
             AwardReward();      // <-- ADICIONADO
@@ -63,7 +64,12 @@ public class GameManager : MonoBehaviour
         if (forgeItem != null && forgeItem.isLegendary) reward *= 2.0;
         credits += reward;
 
-        UIController.I?.UpdateCredits(credits);                  // <-- add
+        if (UIController.I != null)
+        {
+            UIController.I.UpdateCredits(credits);                  // <-- add
+            if (UIController.I.creditsTxt)
+                UIController.I.SpawnFloatingText($"+{reward:0}", UIController.I.creditsTxt.transform.position, Color.yellow);
+        }
         Debug.Log($"[Forge] L{level} +{reward:0} cr (total {credits:0})");
     }
 
