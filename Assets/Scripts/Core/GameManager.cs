@@ -63,6 +63,11 @@ public class GameManager : MonoBehaviour
     {
         double reward = baseCredits * System.Math.Pow(creditsGrowth, level - 1);
         if (forgeItem != null && forgeItem.isLegendary) reward *= 2.0;
+
+        // Avalia a qualidade da forja para aplicar multiplicador de pagamento
+        float qualityScore = Random.Range(0f, 100f); // TODO: substituir pelo cálculo real da qualidade
+        RankSystem.RankEvaluation eval = RankSystem.Evaluate(qualityScore);
+        reward *= eval.multiplier;
         credits += reward;
 
         if (UIController.I != null)
@@ -71,7 +76,7 @@ public class GameManager : MonoBehaviour
             if (UIController.I.creditsTxt)
                 UIController.I.SpawnFloatingText($"+{reward:0}", UIController.I.creditsTxt.transform.position, Color.yellow);
         }
-        Debug.Log($"[Forge] L{level} +{reward:0} cr (total {credits:0})");
+        Debug.Log($"[Forge] L{level} {eval.rank} +{reward:0} cr (total {credits:0})");
     }
 
 
