@@ -4,8 +4,10 @@ using TMPro;
 
 public class ForgeItem : MonoBehaviour
 {
+    public WeaponSpec spec;
     public double maxHP = 50;
     public double progress = 0;
+    public float forgeTime = 0f;
     public bool isLegendary = false;
     public bool IsInProgress => progress < maxHP;
 
@@ -13,9 +15,13 @@ public class ForgeItem : MonoBehaviour
     public Slider forgeBar;        // arraste o Slider da UI
     public TextMeshProUGUI hpText; // arraste o TMP "0/0"
 
-    public void Setup(double newHP, bool legendary)
+    public void Setup(WeaponSpec newSpec, bool legendary)
     {
-        maxHP = newHP; isLegendary = legendary; progress = 0;
+        spec = newSpec;
+        maxHP = spec != null ? spec.hp : 0;
+        forgeTime = spec != null ? spec.time : 0f;
+        isLegendary = legendary;
+        progress = 0;
         UpdateUI();
     }
 
