@@ -60,5 +60,6 @@ public class WeaponGrid : MonoBehaviour
         PlayerPrefs.SetInt("gold", gold);
         PlayerPrefs.SetInt($"weapon_{entry.weaponType}", 1);
         PlayerPrefs.Save();
+        SaveSystem.Save();
     }
 }
