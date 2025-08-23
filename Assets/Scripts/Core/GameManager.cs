@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
@@ -38,6 +39,11 @@ public class GameManager : MonoBehaviour
     [Header("Top Scores")]
     public List<int> top10 = new List<int>();
 
+    [Header("Feedback")]
+    public ParticleSystem tapParticlePrefab;
+    public int tapParticlePoolSize = 10;
+    Queue<ParticleSystem> tapParticlePool = new Queue<ParticleSystem>();
+
     void Awake()
     {
         if (I != null) { Destroy(gameObject); return; }
@@ -50,6 +56,7 @@ public class GameManager : MonoBehaviour
         Application.targetFrameRate = 60;
         SaveSystem.Load();
         UIController.I?.UpdateCredits(credits);
+        InitParticlePool();
     }
 
     void Update()
@@ -60,10 +67,50 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void InitParticlePool()
+    {
+        if (tapParticlePrefab == null) return;
+        for (int i = 0; i < tapParticlePoolSize; i++)
+        {
+            var ps = Instantiate(tapParticlePrefab, transform);
+            ps.gameObject.SetActive(false);
+            tapParticlePool.Enqueue(ps);
+        }
+    }
+
+    ParticleSystem GetParticleFromPool()
+    {
+        if (tapParticlePool.Count > 0)
+        {
+            var ps = tapParticlePool.Dequeue();
+            ps.gameObject.SetActive(true);
+            return ps;
+        }
+        return Instantiate(tapParticlePrefab, transform);
+    }
+
+    IEnumerator ReleaseParticleAfter(ParticleSystem ps, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        ps.gameObject.SetActive(false);
+        tapParticlePool.Enqueue(ps);
+    }
+
+    void SpawnTapParticle(Vector3 pos)
+    {
+        if (tapParticlePrefab == null) return;
+        var ps = GetParticleFromPool();
+        ps.transform.position = pos;
+        ps.Play();
+        StartCoroutine(ReleaseParticleAfter(ps, ps.main.duration));
+    }
+
     public void HammerTap()
     {
         if (forgeItem == null || currentOrder == null) return;
         forgeItem.ApplyProgress(tapPower);
+        SpawnTapParticle(forgeItem.transform.position);
         UIController.I?.SpawnFloatingText($"-{tapPower:0}", forgeItem.transform.position, Color.red);
         if (!forgeItem.IsInProgress)
         {
