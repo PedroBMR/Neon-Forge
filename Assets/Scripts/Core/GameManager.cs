@@ -59,7 +59,7 @@ public class GameManager : MonoBehaviour
             // Avalia a qualidade da forja para aplicar multiplicador de pagamento
             float qualityScore = Random.Range(0f, 100f); // TODO: substituir pelo cálculo real da qualidade
             RankSystem.RankEvaluation eval = RankSystem.Evaluate(qualityScore);
-            CompleteOrder(eval.rank);
+            UIController.I?.ShowWeaponResult(currentWeaponSpec, eval.rank);
         }
     }
 
@@ -73,11 +73,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void CompleteOrder(Rank rank)
+    public void CompleteOrder(Rank rank, int payment)
     {
         if (currentOrder == null) return;
 
-        int payment = ComputePayment(currentOrder.minPayment, currentOrder.maxPayment, rank);
         credits += payment;
         manaEssence += payment;
 

@@ -7,6 +7,7 @@ public class UIController : MonoBehaviour
     public TextMeshProUGUI levelTxt, creditsTxt, tapDpsTxt;
     public TextMeshProUGUI orderWeaponTxt, orderRankTxt, orderPaymentTxt;
     public FloatingText floatingTextPrefab;
+    public WeaponResultPanel weaponResultPanelPrefab;
 
     OrderData pendingOrder;
 
@@ -48,6 +49,16 @@ public class UIController : MonoBehaviour
         int min = Random.Range(10, 20);
         int max = Random.Range(min, min + 20);
         return new OrderData { weaponSpec = spec, minPayment = min, maxPayment = max };
+    }
+
+    public void ShowWeaponResult(WeaponSpec spec, Rank rank)
+    {
+        var prefab = weaponResultPanelPrefab;
+        if (prefab == null)
+            prefab = Resources.Load<WeaponResultPanel>("WeaponResultPanel");
+        if (prefab == null) return;
+        var panel = Instantiate(prefab, transform);
+        panel.Show(spec, rank);
     }
 
     public void SpawnFloatingText(string message, Vector3 position, Color? color = null)
