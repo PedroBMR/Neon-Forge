@@ -5,7 +5,10 @@ public class UIController : MonoBehaviour
 {
     public static UIController I;
     public TextMeshProUGUI levelTxt, creditsTxt, tapDpsTxt;
+    public TextMeshProUGUI orderWeaponTxt, orderRankTxt, orderPaymentTxt;
     public FloatingText floatingTextPrefab;
+
+    OrderData pendingOrder;
 
     void Awake() => I = this;
 
@@ -15,6 +18,37 @@ public class UIController : MonoBehaviour
     }
     public void UpdateCredits(double cr) { if (creditsTxt) creditsTxt.text = $"{cr:0}"; }
     public void UpdateTapDps(double tap, double dps) { if (tapDpsTxt) tapDpsTxt.text = $"TAP {tap:0} | DPS {dps:0.##}"; }
+
+    public void ShowOrder(OrderData order)
+    {
+        pendingOrder = order;
+        if (order == null || order.weaponSpec == null) return;
+        if (orderWeaponTxt) orderWeaponTxt.text = order.weaponSpec.weaponType.ToString();
+        if (orderRankTxt) orderRankTxt.text = order.weaponSpec.rank.ToString();
+        if (orderPaymentTxt) orderPaymentTxt.text = $"{order.minPayment} - {order.maxPayment}";
+    }
+
+    public void AcceptOrder()
+    {
+        if (pendingOrder == null) return;
+        GameManager.I?.StartOrder(pendingOrder);
+    }
+
+    public void DeclineOrder()
+    {
+        ShowOrder(GenerateOrder());
+    }
+
+    OrderData GenerateOrder()
+    {
+        if (GameManager.I == null || GameManager.I.weaponDatabase == null || GameManager.I.weaponDatabase.weaponSpecs.Length == 0)
+            return null;
+        var specs = GameManager.I.weaponDatabase.weaponSpecs;
+        var spec = specs[Random.Range(0, specs.Length)];
+        int min = Random.Range(10, 20);
+        int max = Random.Range(min, min + 20);
+        return new OrderData { weaponSpec = spec, minPayment = min, maxPayment = max };
+    }
 
     public void SpawnFloatingText(string message, Vector3 position, Color? color = null)
     {
