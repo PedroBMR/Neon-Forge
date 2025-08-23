@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
@@ -26,6 +27,11 @@ public class GameManager : MonoBehaviour
     [Header("Dano")]
     public double tapPower = 1;
     public double dps = 0;
+
+    [Header("Upgrades")]
+    public double rankChanceBonus = 0;
+    public double negativeRngReduction = 0;
+    public Dictionary<WeaponType, WeaponUpgradeStats> weaponUpgrades = new Dictionary<WeaponType, WeaponUpgradeStats>();
 
     void Awake()
     {
@@ -105,4 +111,23 @@ public class GameManager : MonoBehaviour
         return Mathf.RoundToInt(basePayment * eval.multiplier);
     }
 
+    [System.Serializable]
+    public class WeaponUpgradeStats
+    {
+        public double tapBonus = 0;
+        public double dpsBonus = 0;
+        public float timeModifier = 0;
+        public float stabilityBonus = 0;
+        public double valueBonus = 0;
+    }
+
+    public WeaponUpgradeStats GetWeaponStats(WeaponType type)
+    {
+        if (!weaponUpgrades.TryGetValue(type, out var stats))
+        {
+            stats = new WeaponUpgradeStats();
+            weaponUpgrades[type] = stats;
+        }
+        return stats;
+    }
 }
