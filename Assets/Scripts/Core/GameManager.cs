@@ -23,6 +23,8 @@ public class GameManager : MonoBehaviour
     [Header("Pedidos")]
     public OrderData currentOrder;
     public WeaponSpec currentWeaponSpec;
+    [Range(0f,1f)] public float rareOrderChance = 0.05f;
+    public float rareOrderChanceIncrement = 0.05f;
 
     [Header("Dano")]
     public double tapPower = 1;
@@ -69,6 +71,18 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public OrderData GenerateOrder()
+    {
+        if (weaponDatabase == null || weaponDatabase.weaponSpecs.Length == 0)
+            return null;
+        var specs = weaponDatabase.weaponSpecs;
+        var spec = specs[Random.Range(0, specs.Length)];
+        bool vip = Random.value < rareOrderChance;
+        int min = Random.Range(10, 20);
+        int max = Random.Range(min, min + 20);
+        return new OrderData { weaponSpec = spec, minPayment = min, maxPayment = max, requiresAd = vip };
+    }
+
     public void StartOrder(OrderData order)
     {
         currentOrder = order;
@@ -94,6 +108,11 @@ public class GameManager : MonoBehaviour
         }
 
         Debug.Log($"[Order] {rank} +{payment:0} cr (total {credits:0})");
+
+        if (rank == Rank.APlus)
+        {
+            rareOrderChance = Mathf.Min(rareOrderChance + rareOrderChanceIncrement, 1f);
+        }
 
         currentOrder = null;
         currentWeaponSpec = null;

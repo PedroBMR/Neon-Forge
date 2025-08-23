@@ -24,7 +24,9 @@ public class UIController : MonoBehaviour
     {
         pendingOrder = order;
         if (order == null || order.weaponSpec == null) return;
-        if (orderWeaponTxt) orderWeaponTxt.text = order.weaponSpec.weaponType.ToString();
+        string weaponName = order.weaponSpec.weaponType.ToString();
+        if (order.requiresAd) weaponName = $"[VIP] {weaponName}";
+        if (orderWeaponTxt) orderWeaponTxt.text = weaponName;
         if (orderRankTxt) orderRankTxt.text = order.weaponSpec.rank.ToString();
         if (orderPaymentTxt) orderPaymentTxt.text = $"{order.minPayment} - {order.maxPayment}";
     }
@@ -32,6 +34,11 @@ public class UIController : MonoBehaviour
     public void AcceptOrder()
     {
         if (pendingOrder == null) return;
+        if (pendingOrder.requiresAd)
+        {
+            WatchAdAndAccept();
+            return;
+        }
         GameManager.I?.StartOrder(pendingOrder);
     }
 
@@ -42,13 +49,15 @@ public class UIController : MonoBehaviour
 
     OrderData GenerateOrder()
     {
-        if (GameManager.I == null || GameManager.I.weaponDatabase == null || GameManager.I.weaponDatabase.weaponSpecs.Length == 0)
+        if (GameManager.I == null)
             return null;
-        var specs = GameManager.I.weaponDatabase.weaponSpecs;
-        var spec = specs[Random.Range(0, specs.Length)];
-        int min = Random.Range(10, 20);
-        int max = Random.Range(min, min + 20);
-        return new OrderData { weaponSpec = spec, minPayment = min, maxPayment = max };
+        return GameManager.I.GenerateOrder();
+    }
+
+    void WatchAdAndAccept()
+    {
+        Debug.Log("Assistindo anúncio para pedido VIP... (placeholder)");
+        GameManager.I?.StartOrder(pendingOrder);
     }
 
     public void ShowWeaponResult(WeaponSpec spec, Rank rank)
