@@ -21,5 +21,12 @@ public class VIPGallery : MonoBehaviour
         if (order != null)
             vipOrders.Add(order);
     }
+
+    public void SetOrders(List<OrderData> orders)
+    {
+        vipOrders.Clear();
+        if (orders != null)
+            vipOrders.AddRange(orders);
+    }
 }
 

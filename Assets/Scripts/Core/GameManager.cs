@@ -35,6 +35,9 @@ public class GameManager : MonoBehaviour
     public double negativeRngReduction = 0;
     public Dictionary<WeaponType, WeaponUpgradeStats> weaponUpgrades = new Dictionary<WeaponType, WeaponUpgradeStats>();
 
+    [Header("Top Scores")]
+    public List<int> top10 = new List<int>();
+
     void Awake()
     {
         if (I != null) { Destroy(gameObject); return; }

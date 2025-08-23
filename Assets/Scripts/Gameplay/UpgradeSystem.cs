@@ -107,6 +107,7 @@ public class UpgradeSystem : MonoBehaviour
         up.level++;
         UIController.I?.UpdateTapDps(GameManager.I.tapPower, GameManager.I.dps);
         UIController.I?.UpdateCredits(GameManager.I.credits);
+        SaveSystem.Save();
         return true;
     }
 
