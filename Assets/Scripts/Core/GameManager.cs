@@ -114,6 +114,11 @@ public class GameManager : MonoBehaviour
             rareOrderChance = Mathf.Min(rareOrderChance + rareOrderChanceIncrement, 1f);
         }
 
+        if (currentOrder != null && currentOrder.requiresAd)
+        {
+            VIPGallery.I?.Add(currentOrder);
+        }
+
         currentOrder = null;
         currentWeaponSpec = null;
 
