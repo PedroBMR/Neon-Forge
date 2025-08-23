@@ -8,6 +8,8 @@ public class UIController : MonoBehaviour
     public TextMeshProUGUI orderWeaponTxt, orderRankTxt, orderPaymentTxt;
     public FloatingText floatingTextPrefab;
     public WeaponResultPanel weaponResultPanelPrefab;
+    public VIPGalleryPanel vipGalleryPanelPrefab;
+    public LegendaryGalleryPanel legendaryGalleryPanelPrefab;
 
     OrderData pendingOrder;
 
@@ -75,5 +77,23 @@ public class UIController : MonoBehaviour
         if (floatingTextPrefab == null) return;
         var ft = Instantiate(floatingTextPrefab, transform);
         ft.Show(message, position, color);
+    }
+
+    public void ShowVIPGallery()
+    {
+        var prefab = vipGalleryPanelPrefab;
+        if (prefab == null)
+            prefab = Resources.Load<VIPGalleryPanel>("VIPGalleryPanel");
+        if (prefab == null) return;
+        Instantiate(prefab, transform);
+    }
+
+    public void ShowLegendaryGallery()
+    {
+        var prefab = legendaryGalleryPanelPrefab;
+        if (prefab == null)
+            prefab = Resources.Load<LegendaryGalleryPanel>("LegendaryGalleryPanel");
+        if (prefab == null) return;
+        Instantiate(prefab, transform);
     }
 }

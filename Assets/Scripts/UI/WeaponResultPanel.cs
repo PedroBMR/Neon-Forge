@@ -72,7 +72,17 @@ public class WeaponResultPanel : MonoBehaviour
 
     void OnSaveGallery()
     {
-        Debug.Log("Guardar na galeria");
+        if (GameManager.I == null || GameManager.I.currentOrder == null)
+        {
+            Close();
+            return;
+        }
+
+        var order = GameManager.I.currentOrder;
+        int payment = GameManager.I.ComputePayment(order.minPayment, order.maxPayment, rank);
+        LegendaryWeaponsGallery.I?.Add(spec, rank, payment);
+        GameManager.I.CompleteOrder(rank, payment);
+        Close();
     }
 
     void Close()
