@@ -1,38 +1,164 @@
 using UnityEngine;
-using TMPro;
+using System;
+using System.Collections.Generic;
 
 public class UpgradeSystem : MonoBehaviour
 {
-    public TextMeshProUGUI tapCostTxt, tapValueTxt, dpsCostTxt, dpsValueTxt, botCostTxt, botValueTxt;
+    public UpgradeCard cardPrefab;
+    public Transform content;
 
-    public double tapBase = 15, tapGrowth = 1.15, tapPerBuy = 1;  int tapLv = 0;
-    public double dpsBase = 20, dpsGrowth = 1.20, dpsPerBuy = 0.5; int dpsLv = 0;
-    public double botBase = 30, botGrowth = 1.25, botPerBuy = 1.0; int botLv = 0;
+    List<UpgradeData> upgrades = new List<UpgradeData>();
 
-    void Start() => Refresh();
-
-    public void BuyTap() { TryBuy(ref tapLv, tapBase, tapGrowth, tapPerBuy, isTap:true); }
-    public void BuyDps() { TryBuy(ref dpsLv, dpsBase, dpsGrowth, dpsPerBuy, isTap:false); }
-    public void BuyBot() { TryBuy(ref botLv, botBase, botGrowth, botPerBuy, isTap:false); }
-
-    void TryBuy(ref int level, double baseCost, double growth, double delta, bool isTap)
+    void Start()
     {
-        double cost = baseCost * System.Math.Pow(growth, level);
-        if (GameManager.I.credits < cost) return;
-        GameManager.I.credits -= cost;
-        if (isTap) GameManager.I.tapPower += delta; else GameManager.I.dps += delta;
-        level++; Refresh();
+        BuildUpgrades();
+        foreach (var up in upgrades)
+        {
+            var card = Instantiate(cardPrefab, content);
+            card.Setup(this, up);
+        }
     }
 
-    void Refresh()
+    void BuildUpgrades()
     {
-        if (tapCostTxt) tapCostTxt.text = $"Comprar ({tapBase * System.Math.Pow(tapGrowth, tapLv):0})";
-        if (tapValueTxt) tapValueTxt.text = $"+{tapPerBuy:0} Tap";
-        if (dpsCostTxt) dpsCostTxt.text = $"Comprar ({dpsBase * System.Math.Pow(dpsGrowth, dpsLv):0})";
-        if (dpsValueTxt) dpsValueTxt.text = $"+{dpsPerBuy:0.##} DPS";
-        if (botCostTxt) botCostTxt.text = $"Comprar ({botBase * System.Math.Pow(botGrowth, botLv):0})";
-        if (botValueTxt) botValueTxt.text = $"+{botPerBuy:0.#} DPS";
+        upgrades.Add(new UpgradeData
+        {
+            category = UpgradeCategory.General,
+            generalType = GeneralUpgradeType.Tap,
+            baseCost = 15,
+            growth = 1.15,
+            amount = 1
+        });
+        upgrades.Add(new UpgradeData
+        {
+            category = UpgradeCategory.General,
+            generalType = GeneralUpgradeType.HighRankChance,
+            baseCost = 50,
+            growth = 1.30,
+            amount = 0.02
+        });
+        upgrades.Add(new UpgradeData
+        {
+            category = UpgradeCategory.General,
+            generalType = GeneralUpgradeType.NegativeRng,
+            baseCost = 30,
+            growth = 1.25,
+            amount = 0.01
+        });
+
+        foreach (WeaponType wt in Enum.GetValues(typeof(WeaponType)))
+        {
+            upgrades.Add(new UpgradeData { category = UpgradeCategory.Weapon, weaponType = wt, weaponAttribute = WeaponAttribute.Tap, baseCost = 20, growth = 1.20, amount = 1 });
+            upgrades.Add(new UpgradeData { category = UpgradeCategory.Weapon, weaponType = wt, weaponAttribute = WeaponAttribute.Dps, baseCost = 25, growth = 1.20, amount = 0.5 });
+            upgrades.Add(new UpgradeData { category = UpgradeCategory.Weapon, weaponType = wt, weaponAttribute = WeaponAttribute.Time, baseCost = 30, growth = 1.25, amount = -0.05 });
+            upgrades.Add(new UpgradeData { category = UpgradeCategory.Weapon, weaponType = wt, weaponAttribute = WeaponAttribute.Stability, baseCost = 35, growth = 1.30, amount = 0.05 });
+            upgrades.Add(new UpgradeData { category = UpgradeCategory.Weapon, weaponType = wt, weaponAttribute = WeaponAttribute.Value, baseCost = 40, growth = 1.35, amount = 1 });
+        }
+    }
+
+    public bool TryBuy(UpgradeData up)
+    {
+        double cost = up.GetCost();
+        if (GameManager.I.credits < cost)
+            return false;
+
+        GameManager.I.credits -= cost;
+
+        if (up.category == UpgradeCategory.General)
+        {
+            switch (up.generalType)
+            {
+                case GeneralUpgradeType.Tap:
+                    GameManager.I.tapPower += up.amount;
+                    break;
+                case GeneralUpgradeType.HighRankChance:
+                    GameManager.I.rankChanceBonus += up.amount;
+                    break;
+                case GeneralUpgradeType.NegativeRng:
+                    GameManager.I.negativeRngReduction += up.amount;
+                    break;
+            }
+        }
+        else
+        {
+            var stats = GameManager.I.GetWeaponStats(up.weaponType);
+            switch (up.weaponAttribute)
+            {
+                case WeaponAttribute.Tap:
+                    stats.tapBonus += up.amount;
+                    GameManager.I.tapPower += up.amount;
+                    break;
+                case WeaponAttribute.Dps:
+                    stats.dpsBonus += up.amount;
+                    GameManager.I.dps += up.amount;
+                    break;
+                case WeaponAttribute.Time:
+                    stats.timeModifier += (float)up.amount;
+                    break;
+                case WeaponAttribute.Stability:
+                    stats.stabilityBonus += (float)up.amount;
+                    break;
+                case WeaponAttribute.Value:
+                    stats.valueBonus += up.amount;
+                    break;
+            }
+        }
+
+        up.level++;
         UIController.I?.UpdateTapDps(GameManager.I.tapPower, GameManager.I.dps);
         UIController.I?.UpdateCredits(GameManager.I.credits);
+        return true;
+    }
+
+    public enum UpgradeCategory { General, Weapon }
+    public enum GeneralUpgradeType { Tap, HighRankChance, NegativeRng }
+    public enum WeaponAttribute { Tap, Dps, Time, Stability, Value }
+
+    [Serializable]
+    public class UpgradeData
+    {
+        public UpgradeCategory category;
+        public GeneralUpgradeType generalType;
+        public WeaponType weaponType;
+        public WeaponAttribute weaponAttribute;
+        public double baseCost;
+        public double growth = 1.1;
+        public double amount = 1;
+        public int level = 0;
+
+        public double GetCost() => baseCost * System.Math.Pow(growth, level);
+
+        public string GetTitle()
+        {
+            if (category == UpgradeCategory.General)
+                return generalType.ToString();
+            return $"{weaponType} {weaponAttribute}";
+        }
+
+        public string GetDescription()
+        {
+            string sign = amount >= 0 ? "+" : "";
+            if (category == UpgradeCategory.General)
+            {
+                switch (generalType)
+                {
+                    case GeneralUpgradeType.Tap: return $"{sign}{amount:0} Tap";
+                    case GeneralUpgradeType.HighRankChance: return $"{sign}{amount:P0} Chance";
+                    case GeneralUpgradeType.NegativeRng: return $"{sign}{amount:P0} RNG";
+                }
+            }
+            else
+            {
+                switch (weaponAttribute)
+                {
+                    case WeaponAttribute.Tap: return $"{sign}{amount:0} Tap";
+                    case WeaponAttribute.Dps: return $"{sign}{amount:0.##} DPS";
+                    case WeaponAttribute.Time: return $"{sign}{amount:P0} Time";
+                    case WeaponAttribute.Stability: return $"{sign}{amount:P0} Stability";
+                    case WeaponAttribute.Value: return $"{sign}{amount:0} Value";
+                }
+            }
+            return string.Empty;
+        }
     }
 }
